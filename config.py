@@ -24,3 +24,12 @@ MAIL_PASSWORD = None
 
 # administrator list
 ADMINS = ['fengyangcs@gmail.com']
+
+class Auth:
+    CLIENT_ID = '547482321420-lnh5n057jfs4p6ucjavpa5vskf6hoiid.apps.googleusercontent.com'
+    CLIENT_SECRET = 'pS0i0kHNBQA9BxXaBLRMm-8E'
+    REDIRECT_URI = 'https://127.0.0.1:5000/gCallback'
+    AUTH_URI = 'https://accounts.google.com/o/oauth2/auth'
+    TOKEN_URI = 'https://accounts.google.com/o/oauth2/token'
+    USER_INFO = 'https://www.googleapis.com/userinfo/v2/me'
+    SCOPE = ['profile', 'email']
