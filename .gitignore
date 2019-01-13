@@ -118,3 +118,5 @@ dmypy.json
 tmp/
 __pycache__/
 flask/
+app.db
+db_repository/
