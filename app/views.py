@@ -1,31 +1,31 @@
 from flask import render_template, flash, redirect, session, url_for, request, g
 from flask_login import login_user, logout_user, current_user, login_required
 from app import app, db, lm
-from app.forms import LoginForm, EditForm
-from app.models import User
+from app.forms import EditForm, PostForm
+from app.models import User, Post
 from datetime import datetime
-from config import Auth
+from config import Auth, POSTS_PER_PAGE
 from requests_oauthlib import OAuth2Session
 from requests.exceptions import HTTPError
 
 
-@app.route('/')
-@app.route('/index')
+@app.route('/', methods=['GET', 'POST'])
+@app.route('/index', methods=['GET', 'POST'])
+@app.route('/index/<int:page>', methods=['GET', 'POST'])
 @login_required
-def index():
+def index(page=1):
+    form = PostForm()
     user = g.user
-    posts = [  # fake array of posts
-        {
-            'author': {'nickname': 'John'},
-            'body': 'Beautiful day in Portland!'
-        },
-        {
-            'author': {'nickname': 'Susan'},
-            'body': 'The Avengers movie was so cool!'
-        }
-    ]
+    if form.validate_on_submit():
+        post = Post(body=form.post.data, timestamp=datetime.utcnow(), user_id=user.get_id())
+        db.session.add(post)
+        db.session.commit()
+        flash('Your post is now live!')
+        return redirect(url_for('index'))
+    posts = user.followed_posts().paginate(page, POSTS_PER_PAGE, False)
     return render_template("index.html",
                            title='Home',
+                           form=form,
                            user=user,
                            posts=posts)
 
@@ -38,7 +38,7 @@ def login():
     auth_url, state = google.authorization_url(
         Auth.AUTH_URI, access_type='offline')
     session['oauth_state'] = state
-    return render_template('logingoogle.html', auth_url=auth_url)
+    return render_template('login.html', auth_url=auth_url)
 
 
 @app.route('/gCallback')
@@ -60,7 +60,7 @@ def callback():
             token = google.fetch_token(
                 Auth.TOKEN_URI,
                 client_secret=Auth.CLIENT_SECRET,
-            authorization_response=request.url)
+                authorization_response=request.url)
         except HTTPError:
             return 'HTTPError occurred.'
         google = get_google_auth(token=token)
@@ -88,6 +88,7 @@ def callback():
             return redirect(request.args.get('next') or url_for('index'))
         return 'Could not fetch your information.'
 
+
 @app.before_request
 def before_request():
     g.user = current_user
@@ -101,6 +102,7 @@ def before_request():
 def load_user(id):
     return User.query.get(int(id))
 
+
 @app.route('/logout')
 def logout():
     logout_user()
@@ -108,19 +110,17 @@ def logout():
 
 
 @app.route('/user/<nickname>')
+@app.route('/user/<nickname>/<int:page>')
 @login_required
-def user(nickname):
-    user = User.query.filter_by(nickname = nickname).first()
-    if user == None:
+def user(nickname, page=1):
+    user = User.query.filter_by(nickname=nickname).first()
+    if user is None:
         flash('User ' + nickname + ' not found.')
         return redirect(url_for('index'))
-    posts = [
-        {'author': user, 'body': 'Test post #1'},
-        {'author': user, 'body': 'Test post #2'}
-    ]
+    posts = user.posts.paginate(page, POSTS_PER_PAGE, False)
     return render_template('user.html',
-                           user = user,
-                           posts = posts)
+                           user=user,
+                           posts=posts)
 
 
 @app.route('/edit', methods=['GET', 'POST'])
@@ -128,7 +128,7 @@ def user(nickname):
 def edit():
     form = EditForm(g.user.nickname)
     if form.validate_on_submit():
-        g.user.nickname=form.nickname.data
+        g.user.nickname = form.nickname.data
         g.user.about_me = form.about_me.data
         db.session.add(g.user)
         db.session.commit()
@@ -138,6 +138,7 @@ def edit():
         form.nickname.data = g.user.nickname
         form.about_me.data = g.user.about_me
     return render_template('edit.html', form=form)
+
 
 @app.route('/follow/<nickname>')
 @login_required
@@ -157,6 +158,7 @@ def follow(nickname):
     db.session.commit()
     flash('You are now following ' + nickname + '!')
     return redirect(url_for('user', nickname=nickname))
+
 
 @app.route('/unfollow/<nickname>')
 @login_required

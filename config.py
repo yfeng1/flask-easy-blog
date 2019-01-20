@@ -25,6 +25,9 @@ MAIL_PASSWORD = None
 # administrator list
 ADMINS = ['fengyangcs@gmail.com']
 
+# pagination
+POSTS_PER_PAGE=3
+
 class Auth:
     CLIENT_ID = '547482321420-lnh5n057jfs4p6ucjavpa5vskf6hoiid.apps.googleusercontent.com'
     CLIENT_SECRET = 'pS0i0kHNBQA9BxXaBLRMm-8E'
