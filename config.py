@@ -28,6 +28,9 @@ ADMINS = ['fengyangcs@gmail.com']
 # pagination
 POSTS_PER_PAGE=3
 
+WHOOSH_BASE=os.path.join(basedir, 'search.db')
+MAX_SEARCH_RESULTS = 50
+
 class Auth:
     CLIENT_ID = '547482321420-lnh5n057jfs4p6ucjavpa5vskf6hoiid.apps.googleusercontent.com'
     CLIENT_SECRET = 'pS0i0kHNBQA9BxXaBLRMm-8E'
@@ -36,3 +39,4 @@ class Auth:
     TOKEN_URI = 'https://accounts.google.com/o/oauth2/token'
     USER_INFO = 'https://www.googleapis.com/userinfo/v2/me'
     SCOPE = ['profile', 'email']
+

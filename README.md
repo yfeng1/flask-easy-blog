@@ -5,3 +5,5 @@ Homework for flask-mega-tutorial
 关注者，联系人和好友
 
 @ http://www.pythondoc.com/flask-mega-tutorial/pagination.html 分页
+
+@http://www.pythondoc.com/flask-mega-tutorial/textsearch.html 全文搜索
